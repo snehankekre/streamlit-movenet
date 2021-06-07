@@ -51,7 +51,15 @@ WEBRTC_CLIENT_SETTINGS = ClientSettings(
 def main():
     st.header("Real time pose detection with MoveNet")
 
-    app_pose_detection()
+    pose_detection_page = "Real time pose detection"
+    app_mode = st.sidebar.selectbox(
+        "Choose the app mode",
+        [
+            pose_detection_page,
+        ])
+    st.subheader(app_mode)
+    if app_mode == pose_detection_page:
+        app_pose_detection()
 
     logger.debug("=== Alive threads ===")
     for thread in threading.enumerate():
@@ -246,11 +254,12 @@ def app_pose_detection():
         return image_from_plot
 
     module = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/3")
-    model = module.signatures["serving_default"]
+    
     input_size = 192
 
     def movenet(input_image):
         input_image = tf.cast(input_image, dtype=tf.int32)
+        model = module.signatures["serving_default"]
         outputs = model(input_image)
         keypoint_with_scores = outputs["output_0"].numpy()
         return keypoint_with_scores
@@ -261,7 +270,6 @@ def app_pose_detection():
                 "https://tfhub.dev/google/movenet/singlepose/lightning/3"
             ).signatures["serving_default"]
 
-        # def _detect_pose(self, image):
 
         def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
             image = frame.to_ndarray(format="rgb24")
